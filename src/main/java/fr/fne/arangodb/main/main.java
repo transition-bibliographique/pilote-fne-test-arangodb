@@ -68,6 +68,7 @@ public class main implements CommandLineRunner {
                     savedFromPersonne = personneRepository.save(personne);
                 }else{
                     savedToPersonne = personneRepository.save(personne);
+                    // Les liens ici non pas de sens, on lie juste les personnes 2 à 2
                     PersonneLink savedLink = personneLinkRepository.save(new PersonneLink(savedFromPersonne, savedToPersonne));
                 }
                 i++;
