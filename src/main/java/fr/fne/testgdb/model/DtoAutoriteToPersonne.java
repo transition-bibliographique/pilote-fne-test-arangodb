@@ -1,11 +1,9 @@
-package fr.fne.arangodb.model;
+package fr.fne.testgdb.model;
 
-import fr.fne.arangodb.autorite.Controlfield;
-import fr.fne.arangodb.autorite.Datafield;
-import fr.fne.arangodb.autorite.Record;
-import fr.fne.arangodb.autorite.Subfield;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.fne.testgdb.autorite.Controlfield;
+import fr.fne.testgdb.autorite.Datafield;
+import fr.fne.testgdb.autorite.Record;
+import fr.fne.testgdb.autorite.Subfield;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -79,8 +77,6 @@ public class DtoAutoriteToPersonne {
                 }
             }
         }
-
         return p;
     }
-
 }

@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>fr.fne.arangodb</groupId>
-	<artifactId>test-arangodb</artifactId>
+	<artifactId>test-graph-database</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>test-arangodb</name>
 	<description>Projet de test pour arangodb</description>
@@ -94,6 +94,23 @@
 			<artifactId>jaxb-runtime</artifactId>
 			<version>4.0.1</version>
 		</dependency>
+
+		<!-- Neo4J -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-neo4j</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>4.4.5</version>
+        </dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<version>3.4.18</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

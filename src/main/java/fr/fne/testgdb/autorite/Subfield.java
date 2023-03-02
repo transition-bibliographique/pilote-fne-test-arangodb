@@ -1,4 +1,4 @@
-package fr.fne.arangodb.autorite;
+package fr.fne.testgdb.autorite;
 
 
 

@@ -1,4 +1,4 @@
-package fr.fne.arangodb.model;
+package fr.fne.testgdb.arangodb.model;
 
 import com.arangodb.springframework.annotation.ArangoId;
 import com.arangodb.springframework.annotation.Document;
@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 @Document("personne")
-public class Personne {
+public class PersonneArangoDB {
 
     @Id
     private String id;
@@ -18,7 +18,7 @@ public class Personne {
     private String arangoId;
 
     @Relations(edges = PersonneLink.class, lazy = true)
-    private Collection<Personne> personnes;
+    private Collection<PersonneArangoDB> personneArangoDBS;
 
     private String nom;
     private String prenom;
@@ -122,8 +122,8 @@ public class Personne {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Personne personne = (Personne) o;
-        return Objects.equals(id, personne.id) && Objects.equals(arangoId, personne.arangoId) && Objects.equals(nom, personne.nom) && Objects.equals(prenom, personne.prenom) && Objects.equals(isni, personne.isni) && Objects.equals(dateDeNaissance, personne.dateDeNaissance) && Objects.equals(dateDeDeces, personne.dateDeDeces) && Objects.equals(urlPerenne, personne.urlPerenne) && Objects.equals(noteBibliographique, personne.noteBibliographique) && Objects.equals(langue, personne.langue) && Objects.equals(activite, personne.activite);
+        PersonneArangoDB personneArangoDB = (PersonneArangoDB) o;
+        return Objects.equals(id, personneArangoDB.id) && Objects.equals(arangoId, personneArangoDB.arangoId) && Objects.equals(nom, personneArangoDB.nom) && Objects.equals(prenom, personneArangoDB.prenom) && Objects.equals(isni, personneArangoDB.isni) && Objects.equals(dateDeNaissance, personneArangoDB.dateDeNaissance) && Objects.equals(dateDeDeces, personneArangoDB.dateDeDeces) && Objects.equals(urlPerenne, personneArangoDB.urlPerenne) && Objects.equals(noteBibliographique, personneArangoDB.noteBibliographique) && Objects.equals(langue, personneArangoDB.langue) && Objects.equals(activite, personneArangoDB.activite);
     }
 
     @Override

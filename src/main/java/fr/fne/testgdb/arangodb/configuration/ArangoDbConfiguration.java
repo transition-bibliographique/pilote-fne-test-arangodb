@@ -1,4 +1,4 @@
-package fr.fne.arangodb.configuration;
+package fr.fne.testgdb.arangodb.configuration;
 
 import com.arangodb.ArangoDB;
 import com.arangodb.springframework.annotation.EnableArangoRepositories;
@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableArangoRepositories(basePackages = {"fr.fne.arangodb"})
+@EnableArangoRepositories(basePackages = {"fr.fne.testgdb"})
 public class ArangoDbConfiguration implements ArangoConfiguration {
 
     @Value("${arangodb.host}")
