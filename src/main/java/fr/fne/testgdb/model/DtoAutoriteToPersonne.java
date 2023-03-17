@@ -18,6 +18,10 @@ public class DtoAutoriteToPersonne {
             if (c.getTag().equalsIgnoreCase("003")) {
                 p.setUrlPerenne(c.getValue());
             }
+
+            if (c.getTag().equalsIgnoreCase("001")) {
+                p.setPpn(c.getValue());
+            }
         }
 
         //DataFields :
@@ -73,6 +77,14 @@ public class DtoAutoriteToPersonne {
                 for (Subfield s : d.getSubfieldList()){
                     if (s.getCode().equalsIgnoreCase("a")){
                         p.setActivite(s.getValue());
+                    }
+                }
+            }
+
+            if (d.getTag().equalsIgnoreCase("500")){
+                for (Subfield s : d.getSubfieldList()){
+                    if (s.getCode().equalsIgnoreCase("3")){
+                        p.setPointAcces(s.getValue());
                     }
                 }
             }

@@ -2,6 +2,7 @@ package fr.fne.testgdb.model;
 
 public class Personne {
 
+    private String ppn;
     private String nom;
     private String prenom;
     private String isni;
@@ -11,6 +12,15 @@ public class Personne {
     private String noteBibliographique;
     private String langue;
     private String activite;
+    private String pointAcces;
+
+    public String getPpn() {
+        return ppn;
+    }
+
+    public void setPpn(String ppn) {
+        this.ppn = ppn;
+    }
 
     public String getNom() {
         return nom;
@@ -84,6 +94,12 @@ public class Personne {
         this.activite = activite;
     }
 
+    public String getPointAcces() {
+        return pointAcces;
+    }
 
+    public void setPointAcces(String pointAcces) {
+        this.pointAcces = pointAcces;
+    }
 }
 
