@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+import fr.fne.testgdb.apacheage.model.PersonneRowMapper;
 import fr.fne.testgdb.arangodb.model.MapperPersonneArangoDB;
 import fr.fne.testgdb.arangodb.model.PersonneArangoDB;
 import fr.fne.testgdb.arangodb.model.PersonneLink;
@@ -17,10 +18,14 @@ import fr.fne.testgdb.neo4j.model.MapperPersonneNeo4j;
 import fr.fne.testgdb.neo4j.model.PersonneNeo4j;
 import fr.fne.testgdb.neo4j.repository.PersonneNeo4jRepository;
 import org.json.JSONObject;
+import org.postgresql.jdbc.PgConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+
+import org.apache.age.jdbc.base.Agtype;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -58,12 +64,14 @@ public class main implements CommandLineRunner {
     @Value("${abes.dump}")
     private String dump;
 
-    @Value("${apacheage.url}")
+    @Value("${spring.datasource.url}")
     private String apacheageUrl;
-    @Value("${apacheage.username}")
+    @Value("${spring.datasource.username}")
     private String apacheageUser;
-    @Value("${apacheage.password}")
+    @Value("${spring.datasource.password}")
     private String apacheagePwd;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     public void run(String... args) throws Exception {
@@ -93,24 +101,20 @@ public class main implements CommandLineRunner {
 
     private void insertApacheAGE (Collection collection) throws SQLException {
 
-        Connection connection = DriverManager.getConnection(apacheageUrl, apacheageUser, apacheagePwd);
-        Statement stmt = connection.createStatement();
-        Statement stmtLink = connection.createStatement();
-
-        stmt.execute("CREATE EXTENSION IF NOT EXISTS age;");
-        stmt.execute("LOAD 'age'");
-        stmt.execute("SET search_path = ag_catalog, \"$user\", public;");
+        jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS age;");
+        jdbcTemplate.execute("LOAD 'age'");
+        jdbcTemplate.execute("SET search_path = ag_catalog, \"$user\", public;");
 
 
         //Suppression et création du graph "Personnes"
-        stmt.execute("SELECT * from ag_catalog.drop_graph('personnes',true)");
-        stmt.execute("SELECT * from ag_catalog.create_graph('personnes')");
+        jdbcTemplate.execute("SELECT * from ag_catalog.drop_graph('personnes',true)");
+        jdbcTemplate.execute("SELECT * from ag_catalog.create_graph('personnes')");
 
         //Création des personnes
         for (Record r : collection.getRecordList()) {
             Personne personne = dtoAutoriteToPersonne.unmarshallerNotice(r);
 
-            stmt.execute("select * from ag_catalog.cypher ('personnes', $$\n" +
+            jdbcTemplate.execute("select * from ag_catalog.cypher ('personnes', $$\n" +
                     "        create (:Person {" +
                     "               ppn:'"+personne.getPpn()+"'," +
                     "               urlPerenne:'"+personne.getUrlPerenne()+"'," +
@@ -128,22 +132,37 @@ public class main implements CommandLineRunner {
         }
 
         //Pour chaque personne, création des liens PPN -> PointAccess
-        ResultSet rs = stmt.executeQuery("select * from ag_catalog.cypher('personnes', $$\n" +
+        List<Personne> rows = jdbcTemplate.query("select * from ag_catalog.cypher('personnes', $$\n" +
                 " MATCH(v)" +
                 " return v \n" +
-                "$$) as (v ag_catalog.agtype)");
+                "$$) as (v ag_catalog.agtype)",new PersonneRowMapper());
 
-        if (rs.next()) {
-            JSONObject json = new JSONObject(rs.getString(1));
-            JSONObject props = json.optJSONObject("properties");
-            if (props != null) {
-                ResultSet rsLink = stmtLink.executeQuery("select * from ag_catalog.cypher('personnes', $$\n" +
-                        " MATCH (a:Person), (b:Person)" +
-                        " where a.ppn = '"+props.getString("ppn")+"' and b.ppn = '"+props.getString("pointAcces")+"'" +
-                        " create (a)-[e:LIE_A { type:'pointAcces' }]->(b)" +
-                        " return e \n" +
-                        "$$) as (r ag_catalog.agtype)");
-            }
+        for (Personne personne : rows) {
+            jdbcTemplate.execute("select * from ag_catalog.cypher('personnes', $$\n" +
+                    " MATCH (a:Person), (b:Person)" +
+                    " where a.ppn = '"+personne.getPpn()+"' and b.ppn = '"+personne.getPointAcces()+"'" +
+                    " create (a)-[e:LIE_A { type:'pointAcces' }]->(b)" +
+                    " return e \n" +
+                    "$$) as (r ag_catalog.agtype)");
+        }
+
+        //Affichage des données, en utilisant le type AGType :
+        PgConnection connection = DriverManager.getConnection(apacheageUrl, apacheageUser, apacheagePwd).unwrap(PgConnection.class);
+        connection.addDataType("agtype", Agtype.class);
+
+        Statement stmt = connection.createStatement();
+        stmt.execute("LOAD 'age'");
+        stmt.execute("SET search_path = ag_catalog, \"$user\", public;");
+
+        // Run cypher
+        ResultSet rs = stmt.executeQuery("SELECT * from cypher('personnes', $$ MATCH (n) RETURN n $$) as (n agtype);");
+        while (rs.next()) {
+            Agtype returnedAgtype = rs.getObject(1, Agtype.class);
+
+            String nodeLabel = returnedAgtype.getMap().getObject("label").toString();
+            String nodeProp =  returnedAgtype.getMap().getObject("properties").toString();
+
+            System.out.println("Vertex : " + nodeLabel + ", \tProps : " + nodeProp);
         }
     }
 
